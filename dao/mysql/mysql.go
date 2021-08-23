@@ -43,3 +43,7 @@ func Close() {
 		zap.L().Error("mysql close error:", zap.Error(err))
 	}
 }
+
+func GetDB() *sqlx.DB {
+	return db
+}

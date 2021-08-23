@@ -1,7 +1,9 @@
 app:
-  name: "web_app"
+  name: "bluebell"
   mode: "dev"
   port: 9090
+  startTime: "2021-08-23"
+  machineId: 1
 
 log:
   level: "debug"
@@ -15,10 +17,11 @@ mysql:
   port: 3306
   user: "root"
   password: "123456"
-  dbname: "test"
+  dbname: "bluebell"
 
+# redis host 记得改成阿里云服务器
 redis:
-  host: "localhost"
+  host: "121.40.193.220"
   port: 6379
   db: 0
   auth: "lmx15521144359"

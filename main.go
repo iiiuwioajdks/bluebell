@@ -1,6 +1,12 @@
 package main
 
 import (
+	"bluebell/dao/mysql"
+	"bluebell/dao/redis"
+	"bluebell/logger"
+	"bluebell/pkg/snowflake"
+	"bluebell/routes"
+	"bluebell/settings"
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
@@ -11,11 +17,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-	"web_app/dao/mysql"
-	"web_app/dao/redis"
-	"web_app/logger"
-	"web_app/routes"
-	"web_app/settings"
 )
 
 // go web 较通用的脚手架模板
@@ -29,9 +30,10 @@ func main() {
 	}
 
 	// 初始化日志
-	err = logger.Init()
+	err = logger.Init("dev")
 	if err != nil {
 		fmt.Println("init logger failed err:", err)
+		return
 	}
 	defer zap.L().Sync()
 	zap.L().Debug("logger init success...")
@@ -40,13 +42,20 @@ func main() {
 	err = mysql.Init()
 	if err != nil {
 		fmt.Println("init mysql failed err:", err)
+		return
 	}
 	defer mysql.Close()
+	//雪花算法初始化
+	if err = snowflake.Init(viper.GetString("app.startTime"), viper.GetInt64("app.machineId")); err != nil {
+		fmt.Println("init snowflake failed err:", err)
+		return
+	}
 
 	// 初始化 redis
 	err = redis.Init()
 	if err != nil {
 		fmt.Println("init redis failed err:", err)
+		return
 	}
 	defer redis.Close()
 

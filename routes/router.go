@@ -1,8 +1,9 @@
 package routes
 
 import (
+	"bluebell/controller"
+	"bluebell/logger"
 	"github.com/gin-gonic/gin"
-	"web_app/logger"
 )
 
 func SetUpRouter() *gin.Engine {
@@ -14,5 +15,10 @@ func SetUpRouter() *gin.Engine {
 		c.JSON(400, "pong")
 	})
 
+	// 用户模块
+	userController := controller.NewUserController()
+	{
+		r.POST("/signup", userController.SignUpHandler)
+	}
 	return r
 }
