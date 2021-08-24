@@ -33,6 +33,7 @@ func Init(mode string) (err error) {
 	var l = new(zapcore.Level)
 	err = l.UnmarshalText([]byte(viper.GetString("log.level")))
 
+	// 判断模式
 	var core zapcore.Core
 	if mode == "dev" {
 		// 开发模式，日志输出到终端

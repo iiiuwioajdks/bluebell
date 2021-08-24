@@ -26,3 +26,9 @@ func SignUp(p *models.ParamSignUp) error {
 	err = mysql.InsertUser(&u)
 	return err
 }
+
+func Login(p *models.ParamLogin) error {
+	var user models.User
+	err := mysql.CheckUserPassword(p, &user)
+	return err
+}

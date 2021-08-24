@@ -5,18 +5,26 @@ import (
 	"net/http"
 )
 
-func Response(c *gin.Context, httpStatus int, code int, data gin.H, msg string) {
-	c.JSON(httpStatus, gin.H{
+func ResponseError(c *gin.Context, code ResCode) {
+	c.JSON(http.StatusOK, gin.H{
 		"code": code,
-		"data": data,
+		"data": nil,
+		"msg":  code.Msg(),
+	})
+}
+
+func ResponseErrorWithMsg(c *gin.Context, code ResCode, msg string) {
+	c.JSON(http.StatusOK, gin.H{
+		"code": code,
+		"data": nil,
 		"msg":  msg,
 	})
 }
 
-func Success(c *gin.Context, data gin.H, msg string) {
-	Response(c, http.StatusOK, 200, data, msg)
-}
-
-func Fail(c *gin.Context, data gin.H, msg string) {
-	Response(c, http.StatusOK, 400, data, msg)
+func Success(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, gin.H{
+		"code": CodeSuccess,
+		"data": data,
+		"msg":  CodeSuccess.Msg(),
+	})
 }

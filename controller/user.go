@@ -5,6 +5,7 @@ import (
 	"bluebell/logic"
 	"bluebell/models"
 	"bluebell/response"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
@@ -12,6 +13,7 @@ import (
 
 type IUser interface {
 	SignUpHandler(c *gin.Context)
+	LoginHandler(c *gin.Context)
 }
 
 type User struct {
@@ -22,6 +24,30 @@ func NewUserController() IUser {
 	return User{DB: mysql.GetDB()}
 }
 
+func (u User) LoginHandler(c *gin.Context) {
+	// 1.获取参数和校验
+	var p models.ParamLogin
+	err := c.ShouldBindJSON(&p)
+	if err != nil {
+		zap.L().Error("Login with invalid param", zap.Error(err))
+		response.ResponseError(c, response.CodeInvalidParam)
+		return
+	}
+
+	// 2.业务处理
+	err = logic.Login(&p)
+	if err != nil {
+		zap.L().Error("logic login error", zap.Error(err))
+		if errors.Is(err, mysql.ErrorNP) {
+			response.ResponseError(c, response.CodeInvalidPassword)
+			return
+		}
+		response.ResponseError(c, response.CodeServerBusy)
+		return
+	}
+	response.Success(c, nil)
+}
+
 func (u User) SignUpHandler(c *gin.Context) {
 	// 1.获取参数和校验
 	var p models.ParamSignUp
@@ -29,7 +55,7 @@ func (u User) SignUpHandler(c *gin.Context) {
 	err := c.ShouldBindJSON(&p)
 	if err != nil {
 		zap.L().Error("Sign Up with invalid param", zap.Error(err))
-		response.Fail(c, nil, "请求参数有误--err:"+err.Error())
+		response.ResponseError(c, response.CodeInvalidParam)
 		return
 	}
 
@@ -37,9 +63,13 @@ func (u User) SignUpHandler(c *gin.Context) {
 	err = logic.SignUp(&p)
 	if err != nil {
 		zap.L().Error("logic sign up error", zap.Error(err))
-		response.Fail(c, nil, err.Error())
+		if errors.Is(err, mysql.ErrorUserExist) {
+			response.ResponseError(c, response.CodeUserExist)
+			return
+		}
+		response.ResponseError(c, response.CodeServerBusy)
 		return
 	}
 	// 3.响应
-	response.Success(c, nil, "sign up success")
+	response.Success(c, nil)
 }
