@@ -35,7 +35,7 @@ func (u User) LoginHandler(c *gin.Context) {
 	}
 
 	// 2.业务处理
-	err = logic.Login(&p)
+	token, err := logic.Login(&p)
 	if err != nil {
 		zap.L().Error("logic login error", zap.Error(err))
 		if errors.Is(err, mysql.ErrorNP) {
@@ -45,7 +45,7 @@ func (u User) LoginHandler(c *gin.Context) {
 		response.ResponseError(c, response.CodeServerBusy)
 		return
 	}
-	response.Success(c, nil)
+	response.Success(c, token)
 }
 
 func (u User) SignUpHandler(c *gin.Context) {
