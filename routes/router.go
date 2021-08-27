@@ -17,12 +17,20 @@ func SetUpRouter() *gin.Engine {
 	})
 
 	// 用户模块
+	v1 := r.Group("")
 	userController := controller.NewUserController()
 	{
 		// 注册
-		r.POST("/signup", userController.SignUpHandler)
+		v1.POST("/signup", userController.SignUpHandler)
 		// 登录
-		r.POST("/login", userController.LoginHandler)
+		v1.POST("/login", userController.LoginHandler)
+	}
+
+	v1.Use(middleware.JWTAuthMiddleware())
+	communityController := controller.NewCommunityController()
+	{
+		v1.GET("/community", communityController.CommunityHandler)
+		v1.GET("/community/:id", communityController.CommunityDetailHandler)
 	}
 
 	return r
