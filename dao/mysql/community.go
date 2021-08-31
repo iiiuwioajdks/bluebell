@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrorInvalidId = errors.New("无效id")
+	ErrorInvalidId   = errors.New("无效id")
+	CommunityUnExist = "社区已注销或不存在"
 )
 
 // GetCommunityList 获取全部社区接口
@@ -38,4 +39,15 @@ func GetCommunityDetail(id int64) (data *models.CommunityDetail, err error) {
 		}
 	}
 	return
+}
+
+func GetCommunityName(communityID int64) (comm string, err error) {
+	sqlStr := "select community_name from community where community_id = ?"
+	err = db.Get(&comm, sqlStr, communityID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+	}
+	return comm, err
 }

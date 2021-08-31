@@ -29,14 +29,23 @@ func SignUp(p *models.ParamSignUp) error {
 }
 
 // Login 返回token和error
-func Login(p *models.ParamLogin) (string, error) {
+func Login(p *models.ParamLogin) (*models.User, error) {
 	var user models.User
+	user.UserName = p.UserName
 	err := mysql.CheckUserPassword(p, &user)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// 生成 JWT
-	return jwt.GenToken(user.UserId)
+	token, err := jwt.GenToken(user.UserId)
+	if err != nil {
+		return nil, err
+	}
+	user.Token = token
+	return &user, err
+}
 
+func GetAuthName(uid int64) (string, error) {
+	return mysql.GetAuthName(uid)
 }

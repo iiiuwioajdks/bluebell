@@ -14,7 +14,20 @@ const secret = "dweqfojjidvfushorgijfcnvierrwog"
 var (
 	ErrorNP        = errors.New("用户名或密码错误")
 	ErrorUserExist = errors.New("用户已存在")
+	UnExist        = "用户已注销"
 )
+
+func GetAuthName(uid int64) (username string, err error) {
+	sqlStr := "select username from user where user_id = ?"
+	err = db.Get(&username, sqlStr, uid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// 一般不直接告诉用户名不存在，防止攻击
+			return UnExist, nil
+		}
+	}
+	return
+}
 
 func CheckUserPassword(p *models.ParamLogin, u *models.User) error {
 	sqlStr := "select user_id,username,password from user where username=?"

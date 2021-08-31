@@ -28,9 +28,15 @@ func SetUpRouter() *gin.Engine {
 
 	v1.Use(middleware.JWTAuthMiddleware())
 	communityController := controller.NewCommunityController()
+	postController := controller.NewPostController()
 	{
 		v1.GET("/community", communityController.CommunityHandler)
 		v1.GET("/community/:id", communityController.CommunityDetailHandler)
+
+		v1.POST("/post", postController.CreatePost)
+		v1.GET("/post/:id", postController.ShowPost)
+		v1.GET("/posts", postController.GetPostList)
+		v1.POST("/vote", postController.Vote)
 	}
 
 	return r

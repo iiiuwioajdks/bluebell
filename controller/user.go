@@ -6,6 +6,7 @@ import (
 	"bluebell/models"
 	"bluebell/response"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
@@ -35,7 +36,7 @@ func (u User) LoginHandler(c *gin.Context) {
 	}
 
 	// 2.业务处理
-	token, err := logic.Login(&p)
+	user, err := logic.Login(&p)
 	if err != nil {
 		zap.L().Error("logic login error", zap.Error(err))
 		if errors.Is(err, mysql.ErrorNP) {
@@ -45,7 +46,11 @@ func (u User) LoginHandler(c *gin.Context) {
 		response.ResponseError(c, response.CodeServerBusy)
 		return
 	}
-	response.Success(c, token)
+	response.Success(c, gin.H{
+		"user_id":   fmt.Sprintf("%d", user.UserId),
+		"user_name": user.UserName,
+		"token":     user.Token,
+	})
 }
 
 func (u User) SignUpHandler(c *gin.Context) {

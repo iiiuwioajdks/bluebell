@@ -4,6 +4,7 @@ import (
 	"bluebell/dao/mysql"
 	"bluebell/dao/redis"
 	"bluebell/logger"
+	"bluebell/pkg/IdGenerator"
 	"bluebell/pkg/snowflake"
 	"bluebell/routes"
 	"bluebell/settings"
@@ -50,6 +51,8 @@ func main() {
 		fmt.Println("init snowflake failed err:", err)
 		return
 	}
+	// IdGenerator 初始化
+	IdGenerator.Init()
 
 	// 初始化 redis
 	err = redis.Init()
