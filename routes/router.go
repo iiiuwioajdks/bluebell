@@ -36,6 +36,7 @@ func SetUpRouter() *gin.Engine {
 		v1.POST("/post", postController.CreatePost)
 		v1.GET("/post/:id", postController.ShowPost)
 		v1.GET("/posts", postController.GetPostList)
+		v1.GET("/posts2", postController.GetPostList2)
 		v1.POST("/vote", postController.Vote)
 	}
 

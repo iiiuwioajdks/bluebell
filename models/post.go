@@ -16,6 +16,7 @@ type Post struct {
 
 type PostDetail struct {
 	AuthName      string `json:"auth_name" db:"username"`
+	VoteNum       int64  `json:"votes"`
 	CommunityName string `json:"community_name" db:"community_name"`
 	*Post         `json:"post"`
 }

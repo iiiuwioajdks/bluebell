@@ -24,7 +24,10 @@ const (
 	OneWeekInS   = 7 * 24 * 3600
 )
 
-var ErrVoteTimeExpire = errors.New("投票时间已过")
+var (
+	ErrorVoteRepetition = errors.New("不能重复投票")
+	ErrVoteTimeExpire   = errors.New("投票时间已过")
+)
 
 func Vote(userId, postId string, direction float64) error {
 	ctx := context.Background()
@@ -41,6 +44,10 @@ func Vote(userId, postId string, direction float64) error {
 	ov := rdb.ZScore(ctx, KeyPostVotedZSet+postId, userId).Val()
 	var dir float64
 	// 现在的值大于之前的值，就表明要加分，看上面规律
+	// 如果传值和原来的一样，提示不能重复投票
+	if direction == ov {
+		return ErrorVoteRepetition
+	}
 	if direction > ov {
 		dir = 1
 	} else {
@@ -48,13 +55,13 @@ func Vote(userId, postId string, direction float64) error {
 	}
 	diff := math.Abs(ov - direction) // 计算两次投票的差值
 	pipeline.ZIncrBy(ctx, KeyPostScoreZSet, dir*diff*ScorePerVote, postId)
+	pipeline.ZIncrBy(ctx, CkeyScore, dir*diff*ScorePerVote, postId)
 
 	// 3.记录用户为该帖子投票的数据
 	if direction == 0 { // 如果取消投票，就要删掉原来的值
 		pipeline.ZRem(ctx, KeyPostVotedZSet+postId, userId)
 	} else {
 		pipeline.ZAdd(ctx, KeyPostVotedZSet+postId, &redis.Z{Score: direction, Member: userId})
-
 	}
 	_, err := pipeline.Exec(ctx)
 	return err

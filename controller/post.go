@@ -15,10 +15,16 @@ type IPost interface {
 	ShowPost(c *gin.Context)
 	GetPostList(c *gin.Context)
 	Vote(c *gin.Context)
+	GetPostList2(c *gin.Context)
 }
 
 type Post struct {
 }
+
+const (
+	OrderTime  = "time"
+	OrderScore = "score"
+)
 
 // Vote 帖子投票功能
 func (p Post) Vote(c *gin.Context) {
@@ -61,6 +67,33 @@ func (p Post) GetPostList(c *gin.Context) {
 	data, err := logic.GetPostList(pageNum, pageSize)
 	if err != nil {
 		zap.L().Error("get post list error", zap.Error(err))
+		response.ResponseError(c, response.CodeInvalidParam)
+		return
+	}
+	response.Success(c, data)
+}
+
+// GetPostList2 按分数或时间排序帖子
+func (p Post) GetPostList2(c *gin.Context) {
+	// 获取分页参数
+	// p.order 是 time 或 score ，代表按照时间查或者按照分数查
+	paramPost := &models.ParamPostList{
+		Page:  1,
+		Size:  10,
+		Order: OrderTime,
+	}
+
+	err := c.ShouldBindQuery(paramPost)
+	if err != nil {
+		zap.L().Error("get post list error", zap.Error(err))
+		response.ResponseError(c, response.CodeInvalidParam)
+		return
+	}
+
+	data, err := logic.GetPostListNew(paramPost)
+
+	if err != nil {
+		zap.L().Error("get post list 2.0 error", zap.Error(err))
 		response.ResponseError(c, response.CodeInvalidParam)
 		return
 	}
